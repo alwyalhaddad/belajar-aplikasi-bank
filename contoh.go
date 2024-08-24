@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 )
 
 type User struct {
@@ -33,7 +34,7 @@ func NewUser(name string, norek int, saldo float64) (*User, error) {
 	return user, nil
 }
 
-// func untuk tarik saldo
+// func untuk withdraw (tarik saldo)
 func (u *User) Withdraw(amount float64) error {
 	if amount <= 0 {
 		return errors.New("Penarikan Tidak Boleh NOL")
@@ -46,9 +47,10 @@ func (u *User) Withdraw(amount float64) error {
 	return nil
 }
 
+// func untuk deposit (masukan saldo)
 func (u *User) Deposit(amount float64) error {
 	if amount <= 0 {
-		return errors.New("Pengisian Minimal Adalah Rp.10.000")
+		return errors.New("Deposit Tidak Boleh Nol")
 	}
 	// sukses deposit
 	u.Saldo += amount
@@ -56,7 +58,7 @@ func (u *User) Deposit(amount float64) error {
 }
 
 func main() {
-	user, err := NewUser("Alwy", 1231231230, 750000)
+	user, err := NewUser("Alwy Alhaddad", 1231231230, 500000)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
@@ -84,19 +86,45 @@ func main() {
 		case 1:
 			fmt.Println("Nama Pengguna: ", user.Name)
 			fmt.Println("Nomor Rekening:", user.NoRek)
-			fmt.Println("Sisa Saldo: ", user.Saldo)
+			fmt.Println("Sisa Saldo: Rp.", user.Saldo)
+
 		// penarikan tunai
 		case 2:
-			var withdraw_amountStr string
 			fmt.Print("Masukan Jumlah Penarikan: Rp.")
+			var withdraw_amountStr string
 			fmt.Scanln(&withdraw_amountStr)
-			fmt.Println("Transaksi Berhasil.")
+			withdrawamount, err := strconv.ParseFloat(withdraw_amountStr, 64)
+
+			if err != nil {
+				fmt.Println("input tidak valid", err)
+				break
+			}
+
+			err = user.Withdraw(withdrawamount)
+			if err != nil {
+				fmt.Println("Gagal Melakukan Penarikan", err)
+			} else {
+				fmt.Println("Transaksi Berhasil, sisa saldo anda Rp.", user.Saldo)
+			}
+
 		// deposit
 		case 3:
+			fmt.Println("Mau Topup Berapa ? Rp.")
 			var deposit_amountStr string
-			fmt.Print("Mau Topup Berapa? Rp.")
 			fmt.Scanln(&deposit_amountStr)
-			fmt.Println("Transaksi Berhasil.")
+			depositamount, err := strconv.ParseFloat(deposit_amountStr, 64)
+			if err != nil {
+				fmt.Println("input tidak valid")
+				break
+			}
+
+			err = user.Deposit(depositamount)
+			if err != nil {
+				fmt.Println("Transaksi Gagal", err)
+			} else {
+				fmt.Println("Transaksi Berhasil", user.Saldo)
+			}
+
 		// keluar dari aplikasi
 		case 4:
 			fmt.Println("Keluar Dari Aplikasi...")
