@@ -41,7 +41,17 @@ func (u *User) Withdraw(amount float64) error {
 	if amount > u.Saldo {
 		return errors.New("Saldo Anda Kurang")
 	}
+	// sukses withdrawl
 	u.Saldo -= amount
+	return nil
+}
+
+func (u *User) Deposit(amount float64) error {
+	if amount <= 0 {
+		return errors.New("Pengisian Minimal Adalah Rp.10.000")
+	}
+	// sukses deposit
+	u.Saldo += amount
 	return nil
 }
 
@@ -58,7 +68,8 @@ func main() {
 		fmt.Println("Silahkan Pilih 1 Angka:")
 		fmt.Println("1.Cek Rekening")
 		fmt.Println("2.Tarik Tunai")
-		fmt.Println("3.Keluar Aplikasi")
+		fmt.Println("3.Deposit")
+		fmt.Println("4.Keluar Aplikasi")
 		fmt.Print("")
 
 		// menu scanner
@@ -77,11 +88,17 @@ func main() {
 		// penarikan tunai
 		case 2:
 			var withdraw_amountStr string
-			fmt.Print("Masukan Jumlah Penarikan: ")
+			fmt.Print("Masukan Jumlah Penarikan: Rp.")
 			fmt.Scanln(&withdraw_amountStr)
-			fmt.Println("Penarikan Berhasil")
-		// keluar dari aplikasi
+			fmt.Println("Transaksi Berhasil.")
+		// deposit
 		case 3:
+			var deposit_amountStr string
+			fmt.Print("Mau Topup Berapa? Rp.")
+			fmt.Scanln(&deposit_amountStr)
+			fmt.Println("Transaksi Berhasil.")
+		// keluar dari aplikasi
+		case 4:
 			fmt.Println("Keluar Dari Aplikasi...")
 			os.Exit(0)
 		default:
