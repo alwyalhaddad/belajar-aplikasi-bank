@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strconv"
 )
 
@@ -30,7 +29,7 @@ func NewUser(name string, norek int, saldo float64) (*User, error) {
 		NoRek: norek,
 		Saldo: saldo,
 	}
-	//sukses
+	// sukses
 	return user, nil
 }
 
@@ -42,7 +41,7 @@ func (u *User) Withdraw(amount float64) error {
 	if amount > u.Saldo {
 		return errors.New("Saldo Anda Kurang")
 	}
-	// sukses withdrawl
+	// sukses withdraw
 	u.Saldo -= amount
 	return nil
 }
@@ -57,21 +56,124 @@ func (u *User) Deposit(amount float64) error {
 	return nil
 }
 
-func main() {
-	user, err := NewUser("Alwy Alhaddad", 1231231230, 500000)
-	if err != nil {
-		fmt.Println("Error:", err)
+// func untuk transfer
+func (u *User) Transfer(users map[int]*User, norekTarget int, amount float64) error {
+	target, exists := users[norekTarget]
+	if !exists {
+		return errors.New("Pengguna Tidak di Temukan")
 	}
+	if amount <= 0 {
+		return errors.New("Jumlah Transfer Tidak Boleh NOL")
+	}
+	if amount > u.Saldo {
+		return errors.New("Saldo Anda Kurang")
+	}
+	// sukses
+	u.Saldo -= amount
+	target.Saldo += amount
+	return nil
+}
+
+// Fungsi untuk menampilkan informasi rekening
+func CekRekening(user *User) {
+	fmt.Println("Nama Pengguna: ", user.Name)
+	fmt.Println("Nomor Rekening:", user.NoRek)
+	fmt.Println("Sisa Saldo: Rp.", user.Saldo)
+}
+
+// Fungsi untuk penarikan saldo
+func TarikTunai(user *User) {
+	fmt.Print("Masukan Jumlah Penarikan: Rp.")
+	var withdraw_amountStr string
+	fmt.Scanln(&withdraw_amountStr)
+	withdrawamount, err := strconv.ParseFloat(withdraw_amountStr, 64)
+
+	if err != nil {
+		fmt.Println("input tidak valid", err)
+		return
+	}
+
+	err = user.Withdraw(withdrawamount)
+	if err != nil {
+		fmt.Println("Gagal Melakukan Penarikan", err)
+	} else {
+		fmt.Println("Transaksi Berhasil, sisa saldo anda Rp.", user.Saldo)
+	}
+}
+
+// Fungsi untuk deposit saldo
+func DepositSaldo(user *User) {
+	fmt.Print("Mau Topup Berapa ? Rp.")
+	var deposit_amountStr string
+	fmt.Scanln(&deposit_amountStr)
+	depositamount, err := strconv.ParseFloat(deposit_amountStr, 64)
+	if err != nil {
+		fmt.Println("input tidak valid")
+		return
+	}
+
+	err = user.Deposit(depositamount)
+	if err != nil {
+		fmt.Println("Transaksi Gagal", err)
+	} else {
+		fmt.Println("Transaksi Berhasil, Saldo Sekarang Rp.", user.Saldo)
+	}
+}
+
+// Fungsi untuk transfer saldo
+func TransferSaldo(user *User, users map[int]*User) {
+	fmt.Println("Masukan Nomor Rekening Tujuan:")
+	var norekTarget int
+	fmt.Scanln(&norekTarget)
+
+	fmt.Println("Masukan Jumlah Transfer: Rp.")
+	var transfer_amountStr string
+	fmt.Scanln(&transfer_amountStr)
+	transferamount, err := strconv.ParseFloat(transfer_amountStr, 64)
+	if err != nil {
+		fmt.Println("input tidak valid", err)
+		return
+	}
+
+	err = user.Transfer(users, norekTarget, transferamount)
+	if err != nil {
+		fmt.Println("Gagal Melakukan Transfer", err)
+	} else {
+		fmt.Println("Transfer Berhasil, Sisa Saldo Anda: Rp.", user.Saldo)
+		fmt.Println("Saldo Penerima: Rp.", users[norekTarget].Saldo)
+	}
+}
+
+// Fungsi untuk inisialisasi pengguna
+func InisialisasiPengguna() map[int]*User {
+	users := make(map[int]*User)
+
+	// menambahkan pengguna
+	user1, _ := NewUser("Alwy Alhaddad", 1231231230, 500000)
+	user2, _ := NewUser("Anas Sufi", 3213213210, 300000)
+
+	users[user1.NoRek] = user1
+	users[user2.NoRek] = user2
+
+	return users
+}
+
+// Fungsi main untuk menampilkan menu dan memanggil fungsi lain
+func main() {
+	// Inisialisasi pengguna
+	users := InisialisasiPengguna()
+	user1 := users[1231231230] // Menggunakan user pertama (contoh)
 
 	var choice int
 
 	for {
-		// menampilan Menu
+		// menampilkan Menu
 		fmt.Println("Silahkan Pilih 1 Angka:")
-		fmt.Println("1.Cek Rekening")
-		fmt.Println("2.Tarik Tunai")
-		fmt.Println("3.Deposit")
-		fmt.Println("4.Keluar Aplikasi")
+		fmt.Println("1. Cek Rekening")
+		fmt.Println("2. Tarik Tunai")
+		fmt.Println("3. Deposit")
+		fmt.Println("4. Transfer")
+		fmt.Println("5. Keluar Aplikasi")
 		fmt.Print("")
 
 		// menu scanner
@@ -81,54 +183,19 @@ func main() {
 			break
 		}
 
+		// Pemanggilan fungsi berdasarkan pilihan user
 		switch choice {
-		// informasi data pengguna
 		case 1:
-			fmt.Println("Nama Pengguna: ", user.Name)
-			fmt.Println("Nomor Rekening:", user.NoRek)
-			fmt.Println("Sisa Saldo: Rp.", user.Saldo)
-
-		// penarikan tunai
+			CekRekening(user1)
 		case 2:
-			fmt.Print("Masukan Jumlah Penarikan: Rp.")
-			var withdraw_amountStr string
-			fmt.Scanln(&withdraw_amountStr)
-			withdrawamount, err := strconv.ParseFloat(withdraw_amountStr, 64)
-
-			if err != nil {
-				fmt.Println("input tidak valid", err)
-				break
-			}
-
-			err = user.Withdraw(withdrawamount)
-			if err != nil {
-				fmt.Println("Gagal Melakukan Penarikan", err)
-			} else {
-				fmt.Println("Transaksi Berhasil, sisa saldo anda Rp.", user.Saldo)
-			}
-
-		// deposit
+			TarikTunai(user1)
 		case 3:
-			fmt.Println("Mau Topup Berapa ? Rp.")
-			var deposit_amountStr string
-			fmt.Scanln(&deposit_amountStr)
-			depositamount, err := strconv.ParseFloat(deposit_amountStr, 64)
-			if err != nil {
-				fmt.Println("input tidak valid")
-				break
-			}
-
-			err = user.Deposit(depositamount)
-			if err != nil {
-				fmt.Println("Transaksi Gagal", err)
-			} else {
-				fmt.Println("Transaksi Berhasil", user.Saldo)
-			}
-
-		// keluar dari aplikasi
+			DepositSaldo(user1)
 		case 4:
+			TransferSaldo(user1, users)
+		case 5:
 			fmt.Println("Keluar Dari Aplikasi...")
-			os.Exit(0)
+			return
 		default:
 			fmt.Println("input salah")
 		}
